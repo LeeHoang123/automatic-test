@@ -137,5 +137,40 @@ pipeline {
                 }
             }
         }
+        stage('Deploy Containers') {
+            steps {
+                script {
+                    // Create a Docker network for the containers to communicate
+                    sh 'docker network create --driver bridge my-network || true'
+                    
+                    // Pull and run MySQL container
+                    sh """
+                        docker pull ${IMAGE_NAME_MYSQL}:latest
+                        docker run -d \
+                            --name mysql-container \
+                            --network my-network \
+                            -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} \
+                            -e MYSQL_USER=${MYSQL_USER} \
+                            -e MYSQL_PASSWORD=${MYSQL_PASSWORD} \
+                            -e MYSQL_DATABASE=${MYSQL_DATABASE} \
+                            -p 3306:3306 \
+                            ${IMAGE_NAME_MYSQL}:latest
+                    """
+                    
+                    // Wait for MySQL to be ready
+                    sh 'sleep 30'
+                    
+                    // Pull and run PHP container
+                    sh """
+                        docker pull ${IMAGE_NAME_PHP}:latest
+                        docker run -d \
+                            --name php-container \
+                            --network my-network \
+                            -p 80:80 \
+                            ${IMAGE_NAME_PHP}:latest
+                    """
+                }
+            }
+        }
     }
 }
