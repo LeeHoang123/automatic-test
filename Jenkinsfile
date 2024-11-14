@@ -117,6 +117,21 @@ pipeline {
                 }
             }
         }
+        stage('Run PHP and MySQL Containers') {
+            steps {
+                script {
+                    // Chạy container PHP từ image đã đẩy lên Docker Hub
+                    sh """
+                        docker run -d --name ${APP_NAME}-php-${BUILD_NUMBER} -p 9000:80 ${IMAGE_NAME_PHP}:${IMAGE_TAG}
+                    """
+
+                    // Chạy container MySQL từ image đã đẩy lên Docker Hub
+                    sh """
+                        docker run -d --name ${APP_NAME}-mysql-${BUILD_NUMBER} -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} -e MYSQL_USER=${MYSQL_USER} -e MYSQL_PASSWORD=${MYSQL_PASSWORD} -e MYSQL_DATABASE=${MYSQL_DATABASE} -p 82:3306 ${IMAGE_NAME_MYSQL}:${IMAGE_TAG}
+                    """
+                }
+            }
+        }
         stage('Cleanup Artifacts') {
             steps {
                 script {
