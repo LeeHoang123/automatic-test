@@ -137,13 +137,13 @@ pipeline {
                 }
             }
         }
-        stage('Deploy Containers') {
-            steps {
+            stage('Deploy Containers') {
+        steps {
                 script {
-                    // Tạo Docker network cho các container giao tiếp với nhau
+                    // Tạo network Docker nếu chưa tồn tại
                     sh 'docker network create --driver bridge my-network || true'
-
-                    // Pull và chạy MySQL container
+                    
+                    // Chạy MySQL container
                     sh """
                         docker pull ${IMAGE_NAME_MYSQL}:latest
                         docker run -d \
@@ -153,14 +153,14 @@ pipeline {
                             -e MYSQL_USER=${MYSQL_USER} \
                             -e MYSQL_PASSWORD=${MYSQL_PASSWORD} \
                             -e MYSQL_DATABASE=${MYSQL_DATABASE} \
-                            -p 3306:3306 \
+                            -p 82:3306 \
                             ${IMAGE_NAME_MYSQL}:latest
                     """
-
-                    // Chờ 30 giây để MySQL container khởi động hoàn toàn
+                    
+                    // Đợi MySQL khởi động
                     sh 'sleep 30'
-
-                    // Pull và chạy PHP container
+                    
+                    // Chạy PHP container
                     sh """
                         docker pull ${IMAGE_NAME_PHP}:latest
                         docker run -d \
@@ -169,17 +169,18 @@ pipeline {
                             -p 9001:80 \
                             ${IMAGE_NAME_PHP}:latest
                     """
-                    
-                    // Pull và chạy phpMyAdmin container trên cổng 82
+    
+                    // Thêm mới: Chạy phpMyAdmin container
                     sh """
-                        docker pull ${PMA_IMAGE}
                         docker run -d \
                             --name phpmyadmin-container \
                             --network my-network \
                             -e PMA_HOST=mysql-container \
                             -e PMA_PORT=3306 \
-                            -p ${PMA_PORT}:80 \
-                            ${PMA_IMAGE}
+                            -e PMA_USER=root \
+                            -e PMA_PASSWORD=${MYSQL_ROOT_PASSWORD} \
+                            -p 8080:80 \
+                            phpmyadmin/phpmyadmin:latest
                     """
                 }
             }
