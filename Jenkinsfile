@@ -42,7 +42,7 @@ pipeline {
 
                         // Sử dụng docker build để tạo image PHP mới từ container
                         sh """
-                            docker build -t ${IMAGE_NAME_PHP}:${IMAGE_TAG} -f- <<EOF
+                            docker build -t ${IMAGE_NAME_PHP}:${IMAGE_TAG} -f- . <<EOF
                             FROM ${container_php.id}
                             COPY ./public /var/www/html
                             COPY ./database /var/www/database
@@ -70,7 +70,7 @@ pipeline {
 
                         // Sử dụng docker build để tạo image MySQL mới từ container
                         sh """
-                            docker build -t ${IMAGE_NAME_MYSQL}:${IMAGE_TAG} -f- <<EOF
+                            docker build -t ${IMAGE_NAME_MYSQL}:${IMAGE_TAG} -f- . <<EOF
                             FROM ${container_mysql.id}
                             EOF
                         """
