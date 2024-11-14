@@ -153,7 +153,7 @@ pipeline {
                             -e MYSQL_USER=${MYSQL_USER} \
                             -e MYSQL_PASSWORD=${MYSQL_PASSWORD} \
                             -e MYSQL_DATABASE=${MYSQL_DATABASE} \
-                            -p 3306:3306 \
+                            -p 82:3306 \
                             ${IMAGE_NAME_MYSQL}:latest
                     """
                     
@@ -166,7 +166,7 @@ pipeline {
                         docker run -d \
                             --name php-container \
                             --network my-network \
-                            -p 80:80 \
+                            -p 9001:80 \
                             ${IMAGE_NAME_PHP}:latest
                     """
                 }
