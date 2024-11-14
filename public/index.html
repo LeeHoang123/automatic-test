@@ -1,37 +1,53 @@
 <html>
- <head>
+<head>
   <title>Leehoang | Docker</title>
-
   <meta charset="utf-8">
-
   <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
   <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-
 </head>
 <body>
-    <div class="container">
+  <div class="container">
     <?php echo "<h1>Leehoang</h1>"; ?>
-	<?php echo "<h3>This is Docker test!</h3>"; ?>
+    <?php echo "<h3>This is Docker test!</h3>"; ?>
 
     <?php
+    // Kết nối MySQL
     $conn = mysqli_connect('container_mysql', 'leehoang', 'leehoang', "Users");
-    $query = 'SELECT * From Person';
-    $result = mysqli_query($conn, $query);
-    echo '<table class="table table-striped">';
-    echo '<thead><tr><th></th><th>id</th><th>name</th></tr></thead>';
-    while($value = $result->fetch_array(MYSQLI_ASSOC)){
-        echo '<tr>';
-        echo '<td><a href="#"><span class="glyphicon glyphicon-search"></span></a></td>';
-        foreach($value as $element){
-            echo '<td>' . $element . '</td>';
-        }
-        echo '</tr>';
+
+    // Kiểm tra kết nối
+    if (!$conn) {
+        die("Connection failed: " . mysqli_connect_error());
     }
-    echo '</table>';
+
+    // Truy vấn dữ liệu từ bảng Person
+    $query = 'SELECT * FROM Person';
+    $result = mysqli_query($conn, $query);
+
+    // Kiểm tra nếu có kết quả
+    if (mysqli_num_rows($result) > 0) {
+        echo '<table class="table table-striped">';
+        echo '<thead><tr><th></th><th>id</th><th>name</th></tr></thead>';
+
+        // Lặp qua các hàng kết quả
+        while($value = $result->fetch_array(MYSQLI_ASSOC)) {
+            echo '<tr>';
+            echo '<td><a href="#"><span class="glyphicon glyphicon-search"></span></a></td>';
+            foreach($value as $element) {
+                echo '<td>' . htmlspecialchars($element) . '</td>'; // Sử dụng htmlspecialchars để tránh XSS
+            }
+            echo '</tr>';
+        }
+
+        echo '</table>';
+    } else {
+        echo "No records found";
+    }
+
+    // Đóng kết nối
     $result->close();
     mysqli_close($conn);
     ?>
-    </div>
+  </div>
 </body>
 </html>
