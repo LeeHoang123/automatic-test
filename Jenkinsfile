@@ -191,16 +191,6 @@ pipeline {
                             -p ${PMA_PORT}:80 \
                             ${PMA_IMAGE}
                     """
-
-                    // Sao chép file Person.sql từ thư mục project vào trong container MySQL
-                    sh """
-                        docker cp ./database/Person.sql mysql-container:/tmp/Person.sql
-                    """
-                    
-                    // Import dữ liệu từ file Person.sql vào MySQL
-                    sh """
-                        docker exec -i mysql-container mysql -u ${MYSQL_USER} -p${MYSQL_PASSWORD} ${MYSQL_DATABASE} < /tmp/Person.sql
-                    """
                 }
             }
         }
