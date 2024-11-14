@@ -1,194 +1,37 @@
-<?php
-// Cấu hình kết nối database
-$host = 'localhost';
-$dbname = 'reddit_db';
-$username = 'reddit_user';
-$password = 'your_password';
+<html>
+ <head>
+  <title>Leehoang | Docker</title>
 
-try {
-    // Kết nối PDO
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    
-    // Function lấy số lượng bản ghi
-    function getCount($pdo, $table) {
-        $stmt = $pdo->query("SELECT COUNT(*) as count FROM $table");
-        return $stmt->fetch(PDO::FETCH_ASSOC)['count'];
-    }
+  <meta charset="utf-8">
 
-    // Lấy thông tin database
-    $dbInfo = $pdo->query("SELECT version() as version")->fetch();
-    
-    // Lấy danh sách tables
-    $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
-    
-    // Lấy trạng thái server
-    $serverStatus = $pdo->query("SHOW STATUS")->fetchAll(PDO::FETCH_KEY_PAIR);
-    
-    // Lấy biến hệ thống
-    $variables = $pdo->query("SHOW VARIABLES")->fetchAll(PDO::FETCH_KEY_PAIR);
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Database Information</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .card {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        h1, h2 {
-            color: #333;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        th, td {
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
-        th {
-            background-color: #f8f9fa;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        .status {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        .status.good {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        .status.warning {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Database Information Dashboard</h1>
-        
-        <!-- Database Overview -->
-        <div class="card">
-            <h2>Database Overview</h2>
-            <table>
-                <tr>
-                    <th>Version</th>
-                    <td><?php echo htmlspecialchars($dbInfo['version']); ?></td>
-                </tr>
-                <tr>
-                    <th>Database Name</th>
-                    <td><?php echo htmlspecialchars($dbname); ?></td>
-                </tr>
-                <tr>
-                    <th>Connection Status</th>
-                    <td>
-                        <span class="status good">Connected</span>
-                    </td>
-                </tr>
-            </table>
-        </div>
+    <?php echo "<h1>Leehoang</h1>"; ?>
+	<?php echo "<h3>This is Docker test!</h3>"; ?>
 
-        <!-- Tables Information -->
-        <div class="card">
-            <h2>Tables Information</h2>
-            <table>
-                <tr>
-                    <th>Table Name</th>
-                    <th>Records Count</th>
-                </tr>
-                <?php foreach ($tables as $table): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($table); ?></td>
-                    <td><?php echo getCount($pdo, $table); ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </table>
-        </div>
-
-        <!-- Server Status -->
-        <div class="card">
-            <h2>Server Status</h2>
-            <table>
-                <tr>
-                    <th>Variable</th>
-                    <th>Value</th>
-                </tr>
-                <?php
-                $importantStatus = ['Uptime', 'Threads_connected', 'Max_used_connections', 'Questions', 'Slow_queries'];
-                foreach ($serverStatus as $key => $value):
-                    if (in_array($key, $importantStatus)):
-                ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($key); ?></td>
-                    <td><?php echo htmlspecialchars($value); ?></td>
-                </tr>
-                <?php endif; endforeach; ?>
-            </table>
-        </div>
-
-        <!-- System Variables -->
-        <div class="card">
-            <h2>System Variables</h2>
-            <table>
-                <tr>
-                    <th>Variable</th>
-                    <th>Value</th>
-                </tr>
-                <?php
-                $importantVars = ['character_set_database', 'max_connections', 'version', 'wait_timeout'];
-                foreach ($variables as $key => $value):
-                    if (in_array($key, $importantVars)):
-                ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($key); ?></td>
-                    <td><?php echo htmlspecialchars($value); ?></td>
-                </tr>
-                <?php endif; endforeach; ?>
-            </table>
-        </div>
+    <?php
+    $conn = mysqli_connect('db', 'ranjit', 'ranjit', "myDb");
+    $query = 'SELECT * From Person';
+    $result = mysqli_query($conn, $query);
+    echo '<table class="table table-striped">';
+    echo '<thead><tr><th></th><th>id</th><th>name</th></tr></thead>';
+    while($value = $result->fetch_array(MYSQLI_ASSOC)){
+        echo '<tr>';
+        echo '<td><a href="#"><span class="glyphicon glyphicon-search"></span></a></td>';
+        foreach($value as $element){
+            echo '<td>' . $element . '</td>';
+        }
+        echo '</tr>';
+    }
+    echo '</table>';
+    $result->close();
+    mysqli_close($conn);
+    ?>
     </div>
-
-    <script>
-        // Simple script to add interactivity
-        document.addEventListener('DOMContentLoaded', function() {
-            const cards = document.querySelectorAll('.card');
-            cards.forEach(card => {
-                const title = card.querySelector('h2');
-                title.addEventListener('click', () => {
-                    const table = card.querySelector('table');
-                    table.style.display = table.style.display === 'none' ? 'table' : 'none';
-                });
-            });
-        });
-    </script>
 </body>
 </html>
-<?php
-} catch(PDOException $e) {
-    die("Connection failed: " . $e->getMessage());
-}
-?>
