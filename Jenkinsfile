@@ -153,7 +153,7 @@ pipeline {
                             -e MYSQL_USER=${MYSQL_USER} \
                             -e MYSQL_PASSWORD=${MYSQL_PASSWORD} \
                             -e MYSQL_DATABASE=${MYSQL_DATABASE} \
-                            -p 82:3306 \
+                            -p 3306:3306 \
                             ${IMAGE_NAME_MYSQL}:latest
                     """
                     
