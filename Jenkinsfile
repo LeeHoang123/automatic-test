@@ -34,14 +34,14 @@ pipeline {
                         
                         // Pull image trước khi tạo container (đảm bảo rằng image luôn có)
                         container_php.pull()
-
+        
                         // Tạo và chạy container PHP
                         def container = container_php.inside('-d') {
                             // Sao chép các file từ repo vào container
-                            sh "docker cp ./public ${container_php.id}:/var/www/html"
-                            sh "docker cp ./database ${container_php.id}:/var/www/database"
+                            sh "cp -r ./public /var/www/html"
+                            sh "cp -r ./database /var/www/database"
                         }
-
+        
                         // Commit lại container thành image PHP của bạn
                         docker.image(container_php.id).commit("${IMAGE_NAME_PHP}:${IMAGE_TAG}")
                         
@@ -51,7 +51,8 @@ pipeline {
                     }
                 }
             }
-        }
+}
+
 
         stage('Build and Run MySQL Docker Container') {
             steps {
