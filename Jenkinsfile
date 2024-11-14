@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        APP_NAME = "Demo-PHP"
+        APP_NAME = "demo_php"
         RELEASE = "1.0.0"
         DOCKER_USER = "hoangb2013534"
         DOCKER_PASS = 'dockerhub'
