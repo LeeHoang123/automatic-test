@@ -82,17 +82,23 @@ pipeline {
                         
                         // Pull image MySQL chính thức trước khi tạo container
                         container_mysql.pull()
-
+        
                         // Tạo container MySQL với các biến môi trường
                         container_mysql.inside("-e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} -e MYSQL_USER=${MYSQL_USER} -e MYSQL_PASSWORD=${MYSQL_PASSWORD} -e MYSQL_DATABASE=${MYSQL_DATABASE}") {
-                            // Không cần làm gì thêm trong container MySQL
+                            // Copy file Person.sql vào container
+                            sh "docker cp database/Person.sql ${container_mysql.id}:/docker-entrypoint-initdb.d/Person.sql"
+        
+                            // Import dữ liệu từ file Person.sql vào MySQL
+                            sh """
+                                docker exec ${container_mysql.id} sh -c 'mysql -u${MYSQL_USER} -p${MYSQL_PASSWORD} ${MYSQL_DATABASE} < /docker-entrypoint-initdb.d/Person.sql'
+                            """
                         }
-
+        
                         // Tạo Dockerfile tạm thời cho MySQL
                         writeFile(file: 'Dockerfile.temp', text: """
                             FROM ${container_mysql.id}
                         """)
-
+        
                         // Sử dụng docker build với Dockerfile tạm thời cho MySQL
                         sh """
                             docker build -t ${IMAGE_NAME_MYSQL}:${IMAGE_TAG} -f Dockerfile.temp . 
@@ -100,13 +106,14 @@ pipeline {
                         
                         // Xóa Dockerfile tạm thời sau khi build xong
                         sh "rm Dockerfile.temp"
-
+        
                         // Đánh tag image MySQL
                         sh "docker tag ${IMAGE_NAME_MYSQL}:${IMAGE_TAG} ${IMAGE_NAME_MYSQL}:latest"
                     }
                 }
             }
         }
+
         stage('Push PHP Docker Image') {
             steps {
                 script {
