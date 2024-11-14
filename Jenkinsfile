@@ -232,12 +232,12 @@ EOF
     //         )
     //     }
         
-        always {
-            // Clean up old backups (keep last 5)
-            sh '''
-                cd ${BACKUP_DIR}
-                ls -t | tail -n +6 | xargs -I {} rm -- {}
-            '''
-        }
+        // always {
+        //     // Clean up old backups (keep last 5)
+        //     sh '''
+        //         cd ${BACKUP_DIR}
+        //         ls -t | tail -n +6 | xargs -I {} rm -- {}
+        //     '''
+        // }
     }
 }
