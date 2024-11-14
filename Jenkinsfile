@@ -85,12 +85,12 @@ pipeline {
         
                         // Tạo container MySQL với các biến môi trường
                         container_mysql.inside("-e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} -e MYSQL_USER=${MYSQL_USER} -e MYSQL_PASSWORD=${MYSQL_PASSWORD} -e MYSQL_DATABASE=${MYSQL_DATABASE}") {
-                            // Copy file Person.sql vào container
-                            sh "docker cp database/Person.sql ${container_mysql.id}:/docker-entrypoint-initdb.d/Person.sql"
+                            // Sao chép file Person.sql từ thư mục trên hệ thống vào container
+                            sh "cp database/Person.sql /docker-entrypoint-initdb.d/Person.sql"
         
                             // Import dữ liệu từ file Person.sql vào MySQL
                             sh """
-                                docker exec ${container_mysql.id} sh -c 'mysql -u${MYSQL_USER} -p${MYSQL_PASSWORD} ${MYSQL_DATABASE} < /docker-entrypoint-initdb.d/Person.sql'
+                                mysql -u${MYSQL_USER} -p${MYSQL_PASSWORD} ${MYSQL_DATABASE} < /docker-entrypoint-initdb.d/Person.sql
                             """
                         }
         
@@ -113,6 +113,7 @@ pipeline {
                 }
             }
         }
+
 
         stage('Push PHP Docker Image') {
             steps {
