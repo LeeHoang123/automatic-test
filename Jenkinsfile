@@ -142,10 +142,10 @@ pipeline {
         stage('Deploy Containers') {
             steps {
                 script {
-                    // Create a Docker network for the containers to communicate
+                    // Tạo Docker network cho các container giao tiếp với nhau
                     sh 'docker network create --driver bridge my-network || true'
-                    
-                    // Pull and run MySQL container
+
+                    // Pull và chạy MySQL container
                     sh """
                         docker pull ${IMAGE_NAME_MYSQL}:latest
                         docker run -d \
@@ -158,11 +158,11 @@ pipeline {
                             -p 3306:3306 \
                             ${IMAGE_NAME_MYSQL}:latest
                     """
-                    
-                    // Wait for MySQL to be ready
+
+                    // Chờ 30 giây để MySQL container khởi động hoàn toàn
                     sh 'sleep 30'
-                    
-                    // Pull and run PHP container
+
+                    // Pull và chạy PHP container
                     sh """
                         docker pull ${IMAGE_NAME_PHP}:latest
                         docker run -d \
@@ -172,7 +172,7 @@ pipeline {
                             ${IMAGE_NAME_PHP}:latest
                     """
                     
-                    // Pull and run phpMyAdmin container on port 82
+                    // Pull và chạy phpMyAdmin container trên cổng 82
                     sh """
                         docker pull ${PMA_IMAGE}
                         docker run -d \
@@ -182,6 +182,16 @@ pipeline {
                             -e PMA_PORT=3306 \
                             -p ${PMA_PORT}:80 \
                             ${PMA_IMAGE}
+                    """
+
+                    // Sao chép file Person.sql từ thư mục project vào trong container MySQL
+                    sh """
+                        docker cp ./database/Person.sql mysql-container:/tmp/Person.sql
+                    """
+                    
+                    // Import dữ liệu từ file Person.sql vào MySQL
+                    sh """
+                        docker exec -i mysql-container mysql -u ${MYSQL_USER} -p${MYSQL_PASSWORD} ${MYSQL_DATABASE} < /tmp/Person.sql
                     """
                 }
             }
