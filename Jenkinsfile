@@ -24,54 +24,29 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/LeeHoang123/automatic-test.git'
             }
         }
-        stage('Build and Run PHP Docker Container') {
+        stage('Build PHP Docker Image') {
             steps {
                 script {
-                    // Đảm bảo Docker đã đăng nhập vào registry
                     docker.withRegistry('', DOCKER_PASS) {
-                        // Tạo container PHP từ image chính thức PHP
-                        def container_php = docker.image("php:7.4-apache")
-                        
-                        // Pull image trước khi tạo container (đảm bảo rằng image luôn có)
-                        container_php.pull()
-        
-                        // Tạo và chạy container PHP
-                        def container = container_php.inside('-d') {
-                            // Sao chép các file từ repo vào container
-                            sh "cp -r ./public /var/www/html"
-                            sh "cp -r ./database /var/www/database"
-                        }
-        
-                        // Commit lại container thành image PHP của bạn
-                        docker.image(container_php.id).commit("${IMAGE_NAME_PHP}:${IMAGE_TAG}")
-                        
-                        // Dừng và xóa container sau khi sử dụng
-                        sh "docker stop ${container_php.id}"
-                        sh "docker rm ${container_php.id}"
+                        // Build image PHP từ Dockerfile và gắn tag
+                        sh """
+                            docker build -t ${IMAGE_NAME_PHP}:${IMAGE_TAG} -f Dockerfile-php .
+                            docker tag ${IMAGE_NAME_PHP}:${IMAGE_TAG} ${IMAGE_NAME_PHP}:latest
+                        """
                     }
                 }
             }
-}
-
-
-        stage('Build and Run MySQL Docker Container') {
+        }
+        stage('Build MySQL Docker Image') {
             steps {
                 script {
-                    // Tạo container MySQL từ image chính thức và cấu hình
-                    def container_mysql = docker.image('mysql:latest')
-                    
-                    // Pull image trước khi tạo container
-                    container_mysql.pull()
-
-                    // Tạo và chạy container MySQL
-                    def container = container_mysql.inside("-d -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} -e MYSQL_USER=${MYSQL_USER} -e MYSQL_PASSWORD=${MYSQL_PASSWORD} -e MYSQL_DATABASE=${MYSQL_DATABASE}")
-                    
-                    // Commit lại container MySQL thành image của bạn
-                    docker.image(container_mysql.id).commit("${IMAGE_NAME_MYSQL}:${IMAGE_TAG}")
-
-                    // Dừng và xóa container sau khi sử dụng
-                    sh "docker stop ${container_mysql.id}"
-                    sh "docker rm ${container_mysql.id}"
+                    docker.withRegistry('', DOCKER_PASS) {
+                        // Build image MySQL với các biến môi trường
+                        sh """
+                            docker build -t ${IMAGE_NAME_MYSQL}:${IMAGE_TAG} --build-arg MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} --build-arg MYSQL_USER=${MYSQL_USER} --build-arg MYSQL_PASSWORD=${MYSQL_PASSWORD} --build-arg MYSQL_DATABASE=${MYSQL_DATABASE} -f Dockerfile-mysql .
+                            docker tag ${IMAGE_NAME_MYSQL}:${IMAGE_TAG} ${IMAGE_NAME_MYSQL}:latest
+                        """
+                    }
                 }
             }
         }
