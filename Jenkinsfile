@@ -19,6 +19,15 @@ pipeline {
                 cleanWs()
             }
         }
+        stage('Stop and Remove Old Containers') {
+            steps {
+                script {
+                    // Dừng tất cả các container đang chạy và xóa chúng
+                    sh 'docker ps -q | xargs -r docker stop'   // Dừng tất cả các container đang chạy
+                    sh 'docker ps -aq | xargs -r docker rm'     // Xóa tất cả các container
+                }
+            }
+        }
         stage('Checkout from Git') {
             steps {
                 git branch: 'main', url: 'https://github.com/LeeHoang123/automatic-test.git'
@@ -117,30 +126,13 @@ pipeline {
                 }
             }
         }
-        stage('Run PHP and MySQL Containers') {
-            steps {
-                script {
-                    // Chạy container PHP từ image đã đẩy lên Docker Hub
-                    sh """
-                        docker run -d --name ${APP_NAME}-php-${BUILD_NUMBER} -p 9001:80 ${IMAGE_NAME_PHP}:${IMAGE_TAG}
-                    """
-
-                    // Chạy container MySQL từ image đã đẩy lên Docker Hub
-                    sh """
-                        docker run -d --name ${APP_NAME}-mysql-${BUILD_NUMBER} -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} -e MYSQL_USER=${MYSQL_USER} -e MYSQL_PASSWORD=${MYSQL_PASSWORD} -e MYSQL_DATABASE=${MYSQL_DATABASE} -p 82:3306 ${IMAGE_NAME_MYSQL}:${IMAGE_TAG}
-                    """
-                }
-            }
-        }
         stage('Cleanup Artifacts') {
             steps {
                 script {
-                    // Dừng và xóa các container đang chạy trước khi xóa image
-                    sh "docker stop ${APP_NAME}-php-${BUILD_NUMBER} || true"
-                    sh "docker rm ${APP_NAME}-php-${BUILD_NUMBER} || true"
-                    sh "docker stop ${APP_NAME}-mysql-${BUILD_NUMBER} || true"
-                    sh "docker rm ${APP_NAME}-mysql-${BUILD_NUMBER} || true"
-        
+                    // Dừng và xóa tất cả các container đang chạy trước khi xóa image
+                    sh 'docker ps -q | xargs -r docker stop'
+                    sh 'docker ps -aq | xargs -r docker rm'
+
                     // Xóa image PHP và MySQL đã tạo
                     sh "docker rmi ${IMAGE_NAME_PHP}:${IMAGE_TAG} || true"
                     sh "docker rmi ${IMAGE_NAME_PHP}:latest || true"
@@ -148,7 +140,6 @@ pipeline {
                     sh "docker rmi ${IMAGE_NAME_MYSQL}:latest || true"
                 }
             }
-}
-
+        }
     }
 }
