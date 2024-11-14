@@ -12,8 +12,6 @@ pipeline {
         MYSQL_USER = 'leehoang'           // Tên người dùng
         MYSQL_PASSWORD = 'leehoang'       // Mật khẩu của người dùng
         MYSQL_DATABASE = 'User'           // Cơ sở dữ liệu
-        PMA_PORT = "82"                   // Thay đổi cổng phpMyAdmin thành 82
-        PMA_IMAGE = "phpmyadmin/phpmyadmin" // Image phpMyAdmin chính thức
     }
     stages {
         stage('Clean Workspace') {
@@ -35,7 +33,6 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/LeeHoang123/automatic-test.git'
             }
         }
-
         stage('Build PHP Docker Image') {
             steps {
                 script {
@@ -61,7 +58,7 @@ pipeline {
 
                         // Sử dụng docker build với Dockerfile tạm thời
                         sh """
-                            docker build -t ${IMAGE_NAME_PHP}:${IMAGE_TAG} -f Dockerfile.temp . 
+                            docker build -t ${IMAGE_NAME_PHP}:${IMAGE_TAG} -f Dockerfile.temp .
                         """
                         
                         // Xóa Dockerfile tạm thời sau khi build xong
@@ -82,39 +79,31 @@ pipeline {
                         
                         // Pull image MySQL chính thức trước khi tạo container
                         container_mysql.pull()
-        
+
                         // Tạo container MySQL với các biến môi trường
                         container_mysql.inside("-e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} -e MYSQL_USER=${MYSQL_USER} -e MYSQL_PASSWORD=${MYSQL_PASSWORD} -e MYSQL_DATABASE=${MYSQL_DATABASE}") {
-                            // Sao chép file Person.sql từ thư mục trên hệ thống vào container
-                            sh "cp database/Person.sql /docker-entrypoint-initdb.d/Person.sql"
-        
-                            // Import dữ liệu từ file Person.sql vào MySQL
-                            sh """
-                                mysql -u${MYSQL_USER} -p${MYSQL_PASSWORD} ${MYSQL_DATABASE} < /docker-entrypoint-initdb.d/Person.sql
-                            """
+                            // Không cần làm gì thêm trong container MySQL
                         }
-        
+
                         // Tạo Dockerfile tạm thời cho MySQL
                         writeFile(file: 'Dockerfile.temp', text: """
                             FROM ${container_mysql.id}
                         """)
-        
+
                         // Sử dụng docker build với Dockerfile tạm thời cho MySQL
                         sh """
-                            docker build -t ${IMAGE_NAME_MYSQL}:${IMAGE_TAG} -f Dockerfile.temp . 
+                            docker build -t ${IMAGE_NAME_MYSQL}:${IMAGE_TAG} -f Dockerfile.temp .
                         """
                         
                         // Xóa Dockerfile tạm thời sau khi build xong
                         sh "rm Dockerfile.temp"
-        
+
                         // Đánh tag image MySQL
                         sh "docker tag ${IMAGE_NAME_MYSQL}:${IMAGE_TAG} ${IMAGE_NAME_MYSQL}:latest"
                     }
                 }
             }
         }
-
-
         stage('Push PHP Docker Image') {
             steps {
                 script {
