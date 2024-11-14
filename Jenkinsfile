@@ -12,6 +12,8 @@ pipeline {
         MYSQL_USER = 'leehoang'           // Tên người dùng
         MYSQL_PASSWORD = 'leehoang'       // Mật khẩu của người dùng
         MYSQL_DATABASE = 'User'           // Cơ sở dữ liệu
+        PMA_PORT = "82"                   // Thay đổi cổng phpMyAdmin thành 82
+        PMA_IMAGE = "phpmyadmin/phpmyadmin" // Image phpMyAdmin chính thức
     }
     stages {
         stage('Clean Workspace') {
@@ -58,7 +60,7 @@ pipeline {
 
                         // Sử dụng docker build với Dockerfile tạm thời
                         sh """
-                            docker build -t ${IMAGE_NAME_PHP}:${IMAGE_TAG} -f Dockerfile.temp .
+                            docker build -t ${IMAGE_NAME_PHP}:${IMAGE_TAG} -f Dockerfile.temp . 
                         """
                         
                         // Xóa Dockerfile tạm thời sau khi build xong
@@ -92,7 +94,7 @@ pipeline {
 
                         // Sử dụng docker build với Dockerfile tạm thời cho MySQL
                         sh """
-                            docker build -t ${IMAGE_NAME_MYSQL}:${IMAGE_TAG} -f Dockerfile.temp .
+                            docker build -t ${IMAGE_NAME_MYSQL}:${IMAGE_TAG} -f Dockerfile.temp . 
                         """
                         
                         // Xóa Dockerfile tạm thời sau khi build xong
@@ -168,6 +170,18 @@ pipeline {
                             --network my-network \
                             -p 9001:80 \
                             ${IMAGE_NAME_PHP}:latest
+                    """
+                    
+                    // Pull and run phpMyAdmin container on port 82
+                    sh """
+                        docker pull ${PMA_IMAGE}
+                        docker run -d \
+                            --name phpmyadmin-container \
+                            --network my-network \
+                            -e PMA_HOST=mysql-container \
+                            -e PMA_PORT=3306 \
+                            -p ${PMA_PORT}:80 \
+                            ${PMA_IMAGE}
                     """
                 }
             }
