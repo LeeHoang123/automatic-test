@@ -40,14 +40,22 @@ pipeline {
                             sh "cp -r ./database /var/www/database"
                         }
 
-                        // Sử dụng docker build để tạo image PHP mới từ container
-                        sh """
-                            docker build -t ${IMAGE_NAME_PHP}:${IMAGE_TAG} -f- . <<EOF
+                        // Tạo Dockerfile tạm thời trong thư mục hiện tại
+                        writeFile(file: 'Dockerfile.temp', text: """
                             FROM ${container_php.id}
                             COPY ./public /var/www/html
                             COPY ./database /var/www/database
-                            EOF
+                        """)
+
+                        // Sử dụng docker build với Dockerfile tạm thời
+                        sh """
+                            docker build -t ${IMAGE_NAME_PHP}:${IMAGE_TAG} -f Dockerfile.temp .
                         """
+                        
+                        // Xóa Dockerfile tạm thời sau khi build xong
+                        sh "rm Dockerfile.temp"
+
+                        // Đánh tag image PHP
                         sh "docker tag ${IMAGE_NAME_PHP}:${IMAGE_TAG} ${IMAGE_NAME_PHP}:latest"
                     }
                 }
@@ -68,12 +76,20 @@ pipeline {
                             // Không cần làm gì thêm trong container MySQL
                         }
 
-                        // Sử dụng docker build để tạo image MySQL mới từ container
-                        sh """
-                            docker build -t ${IMAGE_NAME_MYSQL}:${IMAGE_TAG} -f- . <<EOF
+                        // Tạo Dockerfile tạm thời cho MySQL
+                        writeFile(file: 'Dockerfile.temp', text: """
                             FROM ${container_mysql.id}
-                            EOF
+                        """)
+
+                        // Sử dụng docker build với Dockerfile tạm thời cho MySQL
+                        sh """
+                            docker build -t ${IMAGE_NAME_MYSQL}:${IMAGE_TAG} -f Dockerfile.temp .
                         """
+                        
+                        // Xóa Dockerfile tạm thời sau khi build xong
+                        sh "rm Dockerfile.temp"
+
+                        // Đánh tag image MySQL
                         sh "docker tag ${IMAGE_NAME_MYSQL}:${IMAGE_TAG} ${IMAGE_NAME_MYSQL}:latest"
                     }
                 }
