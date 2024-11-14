@@ -24,24 +24,45 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/LeeHoang123/automatic-test.git'
             }
         }
+        // stage('Build and Run PHP Docker Container') {
+        //     steps {
+        //         script {
+        //             // Tạo container PHP từ image chính thức và sao chép các file vào
+        //             docker.withRegistry('', DOCKER_PASS) {
+        //                 // Tạo container PHP từ image chính thức PHP
+        //                 def container_php = docker.image("php:7.4-apache").run('-d')
+
+        //                 // Sao chép các file từ repo vào container
+        //                 sh "docker cp ./public ${container_php.id}:/var/www/html"
+        //                 sh "docker cp ./database ${container_php.id}:/var/www/database"
+
+        //                 // Commit lại container thành image PHP của bạn
+        //                 docker.image(container_php.id).commit("${IMAGE_NAME_PHP}:${IMAGE_TAG}")
+        //             }
+        //         }
+        //     }
+        // }
         stage('Build and Run PHP Docker Container') {
             steps {
                 script {
-                    // Tạo container PHP từ image chính thức và sao chép các file vào
+                    // Đăng nhập vào Docker Registry nếu cần
                     docker.withRegistry('', DOCKER_PASS) {
                         // Tạo container PHP từ image chính thức PHP
                         def container_php = docker.image("php:7.4-apache").run('-d')
-
+        
                         // Sao chép các file từ repo vào container
                         sh "docker cp ./public ${container_php.id}:/var/www/html"
                         sh "docker cp ./database ${container_php.id}:/var/www/database"
-
+        
                         // Commit lại container thành image PHP của bạn
-                        docker.image(container_php.id).commit("${IMAGE_NAME_PHP}:${IMAGE_TAG}")
+                        def php_image = docker.image("${IMAGE_NAME_PHP}:${IMAGE_TAG}")
+                        php_image.build("--no-cache") // Xây dựng lại image từ container đã chỉnh sửa
+                        php_image.push() // Đẩy image lên Docker registry nếu cần
                     }
                 }
             }
-        }
+}
+
         stage('Build and Run MySQL Docker Container') {
             steps {
                 script {
