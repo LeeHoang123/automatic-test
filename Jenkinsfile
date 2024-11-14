@@ -129,15 +129,11 @@ pipeline {
         stage('Cleanup Artifacts') {
             steps {
                 script {
-                    // Dừng và xóa tất cả các container đang chạy trước khi xóa image
-                    sh 'docker ps -q | xargs -r docker stop'
-                    sh 'docker ps -aq | xargs -r docker rm'
-
-                    // Xóa image PHP và MySQL đã tạo
-                    sh "docker rmi ${IMAGE_NAME_PHP}:${IMAGE_TAG} || true"
-                    sh "docker rmi ${IMAGE_NAME_PHP}:latest || true"
-                    sh "docker rmi ${IMAGE_NAME_MYSQL}:${IMAGE_TAG} || true"
-                    sh "docker rmi ${IMAGE_NAME_MYSQL}:latest || true"
+                    // Xóa images đã tạo sau khi push lên Docker Hub
+                    sh "docker rmi ${IMAGE_NAME_PHP}:${IMAGE_TAG}"
+                    sh "docker rmi ${IMAGE_NAME_PHP}:latest"
+                    sh "docker rmi ${IMAGE_NAME_MYSQL}:${IMAGE_TAG}"
+                    sh "docker rmi ${IMAGE_NAME_MYSQL}:latest"
                 }
             }
         }
