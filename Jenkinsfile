@@ -52,6 +52,7 @@ pipeline {
                         // Tạo Dockerfile tạm thời trong thư mục hiện tại
                         writeFile(file: 'Dockerfile.temp', text: """
                             FROM ${container_php.id}
+                            RUN apt-get update && apt-get install -y libmysqli-dev && docker-php-ext-install mysqli
                             COPY ./public /var/www/html
                             COPY ./database /var/www/database
                         """)
