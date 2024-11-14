@@ -203,41 +203,7 @@ EOF
                 '''
             }
         }
-    }
-    
-    // post {
-    //     success {
-    //         emailext (
-    //             subject: "Build Successful: ${currentBuild.fullDisplayName}",
-    //             body: "Your application has been successfully deployed.",
-    //             to: "your-email@domain.com"
-    //         )
-    //     }
         
-    //     failure {
-    //         script {
-    //             // Restore database from backup if exists
-    //             if (fileExists("${BACKUP_DIR}/backup-${BUILD_NUMBER}.sql")) {
-    //                 sh """
-    //                     mysql -u root ${DB_NAME} < ${BACKUP_DIR}/backup-${BUILD_NUMBER}.sql
-    //                     echo "Database restored from backup"
-    //                 """
-    //             }
-    //         }
-            
-    //         emailext (
-    //             subject: "Build Failed: ${currentBuild.fullDisplayName}",
-    //             body: "Your build has failed. Please check the Jenkins console output.",
-    //             to: "your-email@domain.com"
-    //         )
-    //     }
-        
-        // always {
-        //     // Clean up old backups (keep last 5)
-        //     sh '''
-        //         cd ${BACKUP_DIR}
-        //         ls -t | tail -n +6 | xargs -I {} rm -- {}
-        //     '''
-        // }
     }
+  }
 }
