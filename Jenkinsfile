@@ -3,17 +3,17 @@ pipeline {
     
     environment {
         // PHP Application
-        APP_DIR = '/var/www/html/reddit-clone'
-        APACHE_CONFIG = '/etc/apache2/sites-available/reddit-clone.conf'
+        APP_DIR = '/var/www/html/automatic-test'
+        APACHE_CONFIG = '/etc/apache2/sites-available/automatic-test.conf'
         
         // MySQL
-        DB_NAME = 'reddit_db'
-        DB_USER = 'reddit_user'
-        DB_PASS = credentials('db-password')
-        DB_ROOT_PASS = credentials('db-root-password')
+        DB_NAME = 'leehoang'
+        DB_USER = 'leehoang'
+        DB_PASS = credentials('leehoang')
+        DB_ROOT_PASS = credentials('leehoang')
         
         // Backup
-        BACKUP_DIR = '/var/backups/reddit-clone'
+        BACKUP_DIR = '/var/backups/automatic-test'
     }
     
     stages {
@@ -25,7 +25,7 @@ pipeline {
         
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'YOUR_REPOSITORY_URL'
+                git branch: 'main', url: 'https://github.com/LeeHoang123/automatic-test.git'
             }
         }
         
@@ -92,7 +92,7 @@ EOF
                     # Create Apache virtual host configuration
                     sudo tee ${APACHE_CONFIG} <<EOF
 <VirtualHost *:80>
-    ServerName reddit-clone.local
+    ServerName automatic-test.local
     DocumentRoot ${APP_DIR}/public
     
     <Directory ${APP_DIR}/public>
@@ -101,13 +101,13 @@ EOF
         Require all granted
     </Directory>
     
-    ErrorLog \${APACHE_LOG_DIR}/reddit-clone-error.log
-    CustomLog \${APACHE_LOG_DIR}/reddit-clone-access.log combined
+    ErrorLog \${APACHE_LOG_DIR}/automatic-test-error.log
+    CustomLog \${APACHE_LOG_DIR}/automatic-test-access.log combined
 </VirtualHost>
 EOF
                     
                     # Enable site and required modules
-                    sudo a2ensite reddit-clone
+                    sudo a2ensite automatic-test
                     sudo a2enmod rewrite
                     
                     # Create application directory
@@ -205,32 +205,32 @@ EOF
         }
     }
     
-    post {
-        success {
-            emailext (
-                subject: "Build Successful: ${currentBuild.fullDisplayName}",
-                body: "Your application has been successfully deployed.",
-                to: "your-email@domain.com"
-            )
-        }
+    // post {
+    //     success {
+    //         emailext (
+    //             subject: "Build Successful: ${currentBuild.fullDisplayName}",
+    //             body: "Your application has been successfully deployed.",
+    //             to: "your-email@domain.com"
+    //         )
+    //     }
         
-        failure {
-            script {
-                // Restore database from backup if exists
-                if (fileExists("${BACKUP_DIR}/backup-${BUILD_NUMBER}.sql")) {
-                    sh """
-                        mysql -u root ${DB_NAME} < ${BACKUP_DIR}/backup-${BUILD_NUMBER}.sql
-                        echo "Database restored from backup"
-                    """
-                }
-            }
+    //     failure {
+    //         script {
+    //             // Restore database from backup if exists
+    //             if (fileExists("${BACKUP_DIR}/backup-${BUILD_NUMBER}.sql")) {
+    //                 sh """
+    //                     mysql -u root ${DB_NAME} < ${BACKUP_DIR}/backup-${BUILD_NUMBER}.sql
+    //                     echo "Database restored from backup"
+    //                 """
+    //             }
+    //         }
             
-            emailext (
-                subject: "Build Failed: ${currentBuild.fullDisplayName}",
-                body: "Your build has failed. Please check the Jenkins console output.",
-                to: "your-email@domain.com"
-            )
-        }
+    //         emailext (
+    //             subject: "Build Failed: ${currentBuild.fullDisplayName}",
+    //             body: "Your build has failed. Please check the Jenkins console output.",
+    //             to: "your-email@domain.com"
+    //         )
+    //     }
         
         always {
             // Clean up old backups (keep last 5)
