@@ -1,53 +1,75 @@
-<html>
+<?php
+// Thông tin kết nối cơ sở dữ liệu
+$servername = "mysql-container";  // Tên container MySQL
+$username = "leehoang";          // Tên người dùng MySQL
+$password = "leehoang";          // Mật khẩu MySQL
+$dbname = "User";                // Tên cơ sở dữ liệu
+
+// Kết nối đến MySQL
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Kiểm tra kết nối
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Thực hiện truy vấn SQL để lấy dữ liệu (chỉ lấy id và name)
+$sql = "SELECT id, name FROM users";  // Giả sử bảng users có các cột "id" và "name"
+$result = $conn->query($sql);
+?>
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <title>Leehoang | Docker</title>
-  <meta charset="utf-8">
-  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách người dùng</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <?php echo "<h1>Leehoang</h1>"; ?>
-    <?php echo "<h3>This is Docker test!</h3>"; ?>
+    <h1>Danh sách người dùng</h1>
+
+    <?php if ($result->num_rows > 0): ?>
+        <!-- Hiển thị dữ liệu trong bảng -->
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tên</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php 
+                    // Lặp qua các hàng kết quả
+                    while ($value = $result->fetch_array(MYSQLI_ASSOC)): 
+                ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($value['id']); ?></td>
+                        <td><?php echo htmlspecialchars($value['name']); ?></td>
+                    </tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
+    <?php else: ?>
+        <p>Không có dữ liệu để hiển thị.</p>
+    <?php endif; ?>
 
     <?php
-    // Kết nối MySQL
-    $conn = mysqli_connect('mysql-container', 'leehoang', 'leehoang', "Users");
-
-    // Kiểm tra kết nối
-    if (!$conn) {
-        die("Connection failed: " . mysqli_connect_error());
-    }
-
-    // Truy vấn dữ liệu từ bảng Person
-    $query = 'SELECT * FROM Person';
-    $result = mysqli_query($conn, $query);
-
-    // Kiểm tra nếu có kết quả
-    if (mysqli_num_rows($result) > 0) {
-        echo '<table class="table table-striped">';
-        echo '<thead><tr><th></th><th>id</th><th>name</th></tr></thead>';
-
-        // Lặp qua các hàng kết quả
-        while($value = $result->fetch_array(MYSQLI_ASSOC)) {
-            echo '<tr>';
-            echo '<td><a href="#"><span class="glyphicon glyphicon-search"></span></a></td>';
-            foreach($value as $element) {
-                echo '<td>' . htmlspecialchars($element) . '</td>'; // Sử dụng htmlspecialchars để tránh XSS
-            }
-            echo '</tr>';
-        }
-
-        echo '</table>';
-    } else {
-        echo "No records found";
-    }
-
     // Đóng kết nối
-    $result->close();
-    mysqli_close($conn);
+    $conn->close();
     ?>
-  </div>
 </body>
 </html>
