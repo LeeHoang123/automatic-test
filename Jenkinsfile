@@ -34,8 +34,8 @@ pipeline {
                         // Pull image PHP chính thức trước khi tạo container
                         container_php.pull()
         
-                        // Chạy container PHP và sao chép các file cần thiết
-                        container_php.inside {
+                        // Chạy container PHP với quyền root để sao chép các file cần thiết
+                        container_php.inside('--user root') {
                             sh "cp -r ./public /var/www/html"
                             sh "cp -r ./database /var/www/database"
                         }
@@ -47,6 +47,7 @@ pipeline {
                 }
             }
         }
+
         stage('Build and Tag MySQL Docker Image') {
             steps {
                 script {
