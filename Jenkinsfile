@@ -153,7 +153,7 @@ pipeline {
                             -e MYSQL_USER=${MYSQL_USER} \
                             -e MYSQL_PASSWORD=${MYSQL_PASSWORD} \
                             -e MYSQL_DATABASE=${MYSQL_DATABASE} \
-                            -p 82:3306 \
+                            -p 3306:3306 \
                             ${IMAGE_NAME_MYSQL}:latest
                     """
                     
@@ -179,7 +179,7 @@ pipeline {
                             -e PMA_PORT=3306 \
                             -e PMA_USER=root \
                             -e PMA_PASSWORD=${MYSQL_ROOT_PASSWORD} \
-                            -p 8080:80 \
+                            -p 82:80 \
                             phpmyadmin/phpmyadmin:latest
                     """
                 }
