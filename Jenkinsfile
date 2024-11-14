@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        APP_NAME = "demo_php"
+        APP_NAME = "demo-php"
         RELEASE = "1.0.0"
         DOCKER_USER = "hoangb2013534"
         DOCKER_PASS = 'dockerhub'
@@ -24,7 +24,7 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/LeeHoang123/automatic-test.git'
             }
         }
-        stage('Build and Tag PHP Docker Image') {
+        stage('Build PHP Docker Image') {
             steps {
                 script {
                     docker.withRegistry('', DOCKER_PASS) {
@@ -33,21 +33,26 @@ pipeline {
                         
                         // Pull image PHP chính thức trước khi tạo container
                         container_php.pull()
-        
+
                         // Chạy container PHP với quyền root để sao chép các file cần thiết
                         container_php.inside('--user root') {
                             sh "cp -r ./public /var/www/html"
                             sh "cp -r ./database /var/www/database"
                         }
-        
-                        // Commit lại container thành image PHP của bạn
-                        docker.image(container_php.id).commit("${IMAGE_NAME_PHP}:${IMAGE_TAG}")
+
+                        // Sử dụng docker build để tạo image PHP mới từ container
+                        sh """
+                            docker build -t ${IMAGE_NAME_PHP}:${IMAGE_TAG} -f- <<EOF
+                            FROM ${container_php.id}
+                            COPY ./public /var/www/html
+                            COPY ./database /var/www/database
+                            EOF
+                        """
                         sh "docker tag ${IMAGE_NAME_PHP}:${IMAGE_TAG} ${IMAGE_NAME_PHP}:latest"
                     }
                 }
             }
         }
-
         stage('Build and Tag MySQL Docker Image') {
             steps {
                 script {
@@ -63,8 +68,12 @@ pipeline {
                             // Không cần làm gì thêm trong container MySQL
                         }
 
-                        // Commit lại container MySQL thành image của bạn
-                        docker.image(container_mysql.id).commit("${IMAGE_NAME_MYSQL}:${IMAGE_TAG}")
+                        // Sử dụng docker build để tạo image MySQL mới từ container
+                        sh """
+                            docker build -t ${IMAGE_NAME_MYSQL}:${IMAGE_TAG} -f- <<EOF
+                            FROM ${container_mysql.id}
+                            EOF
+                        """
                         sh "docker tag ${IMAGE_NAME_MYSQL}:${IMAGE_TAG} ${IMAGE_NAME_MYSQL}:latest"
                     }
                 }
