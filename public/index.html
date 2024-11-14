@@ -15,7 +15,7 @@
 	<?php echo "<h3>This is Docker test!</h3>"; ?>
 
     <?php
-    $conn = mysqli_connect('db', 'leehoang', 'leehoang', "Users");
+    $conn = mysqli_connect('container_mysql', 'leehoang', 'leehoang', "Users");
     $query = 'SELECT * From Person';
     $result = mysqli_query($conn, $query);
     echo '<table class="table table-striped">';
